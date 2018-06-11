@@ -6,12 +6,12 @@ const app = express();
 
 // rotas
 const index  = require('../routes/index-route');
-const product  = require('../routes/products-route');
+const users  = require('../routes/users-route');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}));
 
 app.use('/',index);
-app.use('/products',product);
+app.use('/users',users);
 
 module.exports = app;
