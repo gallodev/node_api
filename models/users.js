@@ -10,6 +10,18 @@ exports.list = function(req,res){
     });    
 };
 
+exports.get = function(req,res){
+
+    var id = req.params.id;
+
+    con.query('SELECT * FROM TB_USER WHERE ID = ?',id,function(err,row){
+        if(err)
+            console.log("Get specify register fail %s",err);
+            
+        res.json(row);
+    });
+};
+
 exports.insert = function(req,res){
     var input = JSON.parse(JSON.stringify(req.body));
     var last_id = 0;
@@ -17,27 +29,29 @@ exports.insert = function(req,res){
     con.query('SELECT ID FROM TB_USER ORDER BY ID DESC LIMIT 1',function(err,row){
         if(err)
             console.log("Get last id error %s",err);
+                    
+        row.map(function(item) {
+            last_id = item.ID;              
+        }); 
+        
 
-        last_id = row.ID;
+        var data = {
+            ID : last_id + 1,
+            NAME    : input.NOME,
+            LAST_NAME : input.SOBRENOME,
+            EMAIL   : input.EMAIL,
+            PASSWORD   : input.SENHA 
+        }        
+
+        con.query("INSERT INTO TB_USER SET ?",data,function(err,rows){
+            if(err)
+                console.log("Inserting error %s",err);
+                
+            res.json({"success":true,"message":"Registro inserido com sucesso!"});
+        }); 
+                                   
     });
-
-    var data = {
-        ID : last_id + 1,
-        NAME    : input.NOME,
-        LAST_NAME : input.SOBRENOME,
-        EMAIL   : input.EMAIL,
-        PASSWORD   : input.SENHA 
-    }
-
-    console.log(data);
-
-    con.query("INSERT INTO TB_USER VALUES(?)",data,function(err,rows){
-        if(err)
-            console.log("Inserting error %s",err);
-
-        console.log(rows);
-        res.json({"success":true,"message":"Registro inserido com sucesso!"});
-    });
+        
 
 }
 
@@ -50,8 +64,7 @@ exports.edit = function(req,res){
         NAME    : input.NOME,
         LAST_NAME : input.SOBRENOME,
         EMAIL   : input.EMAIL,
-        PASSWORD   : input.SENHA 
-    
+        PASSWORD   : input.SENHA     
     };
     
     con.query("UPDATE TB_USER set ? WHERE id = ? ",[data,id], function(err, rows)
